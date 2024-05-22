@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<!--
+    ICG Project in Three.js - Relaxing forest testing
+
+    M. Rafaela Abrunhosa - 107658 - March 2024 - Updated: April 2024
+
+    https://github.com/mariaabr
+-->
+
+<head>
+
+    <title>three.js project &mdash; Relaxing Forest Game</title>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <style>
+        body {
+
+            background-color: lightskyblue;
+
+            /* To use the complete page */
+
+            margin: 0px;
+
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script> -->
+
+    <script type="importmap">
+		{
+			"imports": {
+				"three": "https://threejs.org/build/three.module.js",
+				"three/addons/": "https://threejs.org/examples/jsm/"
+			}
+		}
+	</script>
+
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        // objects
+        let islandGroup = new THREE.Group();
+        let controls;
+
+        const createIsland = () => {
+            // earth
+            let coneGeo = new THREE.ConeGeometry(2, 3, 8);
+            let mat = new THREE.MeshPhongMaterial({
+                color: 0x85411b
+            });
+            let cone = new THREE.Mesh(coneGeo, mat);
+            cone.rotation.x = THREE.MathUtils.degToRad(180)
+            cone.position.set(0, -1.75, 0);
+            islandGroup.add(cone);
+            // grass
+            let boxGeo = new THREE.BoxGeometry();
+            let mat2 = new THREE.MeshPhongMaterial({
+                color: 0x239937
+            });
+            let grass = new THREE.Mesh(boxGeo, mat2);
+            grass.scale.set(4, 0.5, 4);
+            grass.receiveShadow = true;
+            islandGroup.add(grass);
+            // water
+            let mat3 = new THREE.MeshPhongMaterial({
+                color: 0x89d1f0
+            });
+            let water = new THREE.Mesh(boxGeo, mat3);
+            water.receiveShadow = true;
+            islandGroup.add(water);
+            water.scale.set(0.5, 0.5, 4);
+            water.position.set(0.75, 0.005, 0.005);
+            // mainGroup.add(islandGroup);
+        }
+
+        function createTree1(x, y, z) {
+            const loader = new GLTFLoader();
+
+            // Carregar o modelo GLTF da árvore
+            loader.load(
+                // URL do modelo GLTF
+                'models/gltf/arvore/scene.gltf',
+                // Função de callback chamada quando o modelo é carregado
+                function (gltf) {
+                    // const tree = gltf.scene;
+
+                    // // Posicionar a árvore
+                    // tree.position.set(x, y, z); // Defina x, y, z como as posições desejadas
+
+                    // scene.add(tree);
+
+                    scene.add( gltf.scene );
+
+                    gltf.animations; // Array<THREE.AnimationClip>
+                    gltf.scene; // THREE.Group
+                    gltf.scenes; // Array<THREE.Group>
+                    gltf.cameras; // Array<THREE.Camera>
+                    gltf.asset;
+                },
+                function (xhr) {
+
+                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+
+                },
+                // called when loading has errors
+                function (error) {
+
+                    console.log('An error happened');
+
+                }
+            );
+        }
+
+        function init() {
+            const scene = new THREE.Scene();
+
+            const ambientLight = new THREE.AmbientLight('rgb(255, 255, 255)', 0.5); // ambient light
+            scene.add(ambientLight);
+
+            createIsland();
+            scene.add(islandGroup);
+
+            createTree1(2, 0, 3);
+
+            const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+
+            camera.position.z = 5;
+
+            // Point the camera to the center of the scene
+
+            camera.lookAt(scene.position);
+
+            scene.add(camera);
+
+            // The RENDERER --- To display the scene on the Web page
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+
+            renderer.setClearColor(new THREE.Color(0xffffff));
+
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // Add the output of the renderer
+
+            document.body.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            // controls.screenSpacePanning = true;
+            // controls.autoRotate = true;
+
+            // controls.keys = {
+            //     LEFT: 'ArrowLeft',
+            //     UP: 'ArrowUp',
+            //     RIGHT: 'ArrowRight',
+            //     BOTTOM: 'ArrowDown'
+            // };
+            // controls.listenToKeyEvents(window);
+
+            // controls.mouseButtons = {
+            //     LEFT: THREE.MOUSE.ROTATE,
+            //     MIDDLE: THREE.MOUSE.DOLLY,
+            //     RIGHT: THREE.MOUSE.PAN
+            // };
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+        }
+
+        window.onload = init
+    </script>
+</body>
+
+</html>
